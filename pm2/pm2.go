@@ -3,15 +3,20 @@ package pm2
 import (
 	"os"
 	"sync"
+
+	"github.com/yourtion/go-utils/metric"
 )
 
 const pm2InsKey = "PM2_INTERACTOR_PROCESSING"
 
 // pm2 实例
 type pm struct {
-	connected bool         // 是否连接
-	tran      *transporter // 传输
-	actions   sync.Map     // 全局 actions
+	connected     bool                      // 是否连接
+	tran          *transporter              // 传输
+	actions       sync.Map                  // 全局 actions
+	metrics       map[string]*metric.Metric // 全局 metrics
+	metricLock    sync.RWMutex              // metrics 读写锁
+	metricHandler *func()                   // metrics 更新函数
 }
 
 var instance *pm
@@ -27,10 +32,13 @@ func GetInstance() *pm {
 
 // create 创建 pm2 实例
 func create() *pm {
-	pm2 := &pm{
-		connected: false,
-		tran:      nil,
-		actions:   sync.Map{},
+	var pm2 = &pm{
+		connected:     false,
+		tran:          nil,
+		actions:       sync.Map{},
+		metrics:       make(map[string]*metric.Metric),
+		metricLock:    sync.RWMutex{},
+		metricHandler: nil,
 	}
 	if os.Getenv(pm2InsKey) != "true" {
 		return pm2
@@ -41,6 +49,8 @@ func create() *pm {
 	}
 	pm2.connected = true
 	pm2.tran = t
+	pm2.prepareMetrics()
 	go pm2.tran.setHandler(pm2.actionHandler)
+	go pm2.startSendStatus()
 	return pm2
 }
