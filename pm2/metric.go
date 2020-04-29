@@ -8,7 +8,7 @@ import (
 
 // AddMetric to global metrics array
 func (pm2 *pm) AddMetric(metric *metric.Metric) {
-	if !pm2.connected {
+	if !pm2.isConnected() {
 		return
 	}
 	pm2.metricLock.Lock()
@@ -17,7 +17,7 @@ func (pm2 *pm) AddMetric(metric *metric.Metric) {
 }
 
 func (pm2 *pm) refreshMetricInfo() {
-	if !pm2.connected {
+	if !pm2.isConnected() {
 		return
 	}
 	pm2.metricLock.RLock()
@@ -47,6 +47,9 @@ func (pm2 *pm) prepareMetrics() {
 }
 
 func (pm2 *pm) startSendStatus() {
+	if !pm2.isConnected() {
+		return
+	}
 	ticker := time.NewTicker(time.Second)
 	for {
 		<-ticker.C

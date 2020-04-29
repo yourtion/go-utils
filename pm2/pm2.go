@@ -30,6 +30,10 @@ func GetInstance() *pm {
 	return instance
 }
 
+func (pm2 *pm) isConnected() bool {
+	return pm2 != nil && pm2.connected && pm2.tran != nil
+}
+
 // create 创建 pm2 实例
 func create() *pm {
 	var pm2 = &pm{

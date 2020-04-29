@@ -2,9 +2,6 @@ package pm2
 
 // addAction 添加 action 到全局 map 中
 func (pm2 *pm) addAction(action *action) {
-	if !pm2.connected {
-		return
-	}
 	pm2.actions.Store(action.ActionName, action)
 }
 
@@ -28,9 +25,6 @@ func (pm2 *pm) registerAction(action *action) {
 
 // actionHandler 根据 pm2 触发的函数执行相应的 action
 func (pm2 *pm) actionHandler(msg string, opts string) {
-	if pm2 == nil || pm2.tran == nil {
-		return
-	}
 	defer func() {
 		_ = recover()
 	}()
@@ -46,6 +40,9 @@ func (pm2 *pm) actionHandler(msg string, opts string) {
 
 // AddAction 注册 action 函数到 pm2 上
 func (pm2 *pm) AddAction(name string, f actionFun) {
+	if !pm2.isConnected() {
+		return
+	}
 	action := &action{
 		ActionName: name,
 		ActionType: "custom",
