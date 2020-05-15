@@ -7,7 +7,13 @@ import (
 	"github.com/yourtion/go-utils/metric"
 )
 
-const pm2InsKey = "PM2_INTERACTOR_PROCESSING"
+const pm2HomeKey = "PM2_HOME"
+
+type logFunc func(format string, args ...interface{})
+
+func logNon(format string, args ...interface{}) {}
+
+var log logFunc
 
 // pm2 实例
 type pm struct {
@@ -24,7 +30,12 @@ var once sync.Once
 
 // GetInstance 获取 pm2 单例
 func GetInstance() *pm {
+	return GetInstanceWithLogger(logNon)
+}
+
+func GetInstanceWithLogger(logger logFunc) *pm {
 	once.Do(func() {
+		log = logger
 		instance = create()
 	})
 	return instance
@@ -44,11 +55,13 @@ func create() *pm {
 		metricLock:    sync.RWMutex{},
 		metricHandler: nil,
 	}
-	if os.Getenv(pm2InsKey) != "true" {
+	log("ENV: %s\n", os.Getenv(pm2HomeKey))
+	if os.Getenv(pm2HomeKey) == "" {
 		return pm2
 	}
 	t, err := connect()
 	if err != nil {
+		log("connect error: %s\n", err)
 		return pm2
 	}
 	pm2.connected = true
@@ -56,5 +69,6 @@ func create() *pm {
 	pm2.prepareMetrics()
 	go pm2.tran.setHandler(pm2.actionHandler)
 	go pm2.startSendStatus()
+	log("prepare done\n")
 	return pm2
 }
