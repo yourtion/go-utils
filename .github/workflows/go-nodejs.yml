@@ -1,0 +1,24 @@
+name: Go with Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v1
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+    - run: npm install -g pm2
+    - run: go test -cover github.com/yourtion/go-utils/nodejs
+    - run: go test -cover github.com/yourtion/go-utils/pm2
+
+
+
