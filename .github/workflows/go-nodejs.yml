@@ -22,7 +22,3 @@ jobs:
         node-version: 14.x
     - run: npm install -g pm2
     - run: go test -cover github.com/yourtion/go-utils/nodejs
-    - run: go test -cover github.com/yourtion/go-utils/pm2
-
-
-
