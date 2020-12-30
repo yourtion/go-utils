@@ -2,9 +2,8 @@ name: Go with Node.js CI
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    paths:
+      - "nodejs/**"
 
 jobs:
   build:
